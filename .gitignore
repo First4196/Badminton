@@ -9,4 +9,5 @@ compile_commands.json
 CTestTestfile.cmake
 
 bin
-data
+data/*
+!data/csvs

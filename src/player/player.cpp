@@ -22,7 +22,7 @@ map<string, string> fileExt{
     {"tag", "txt"},
     {"court", "txt"},
     {"player", "txt"},
-    {"csv", "txt"}
+    {"csv", "csv"}
 };
 
 string getPath(string what, string input){
@@ -201,7 +201,7 @@ void process(string input, map<string,int> options){
     
     ofstream csvfile;
     if(options["savecsv"]){
-        playerfile.open(getPath("csv",input));
+        csvfile.open(getPath("csv",input));
         csvfile << "frame,tag,xN,yN,wN,hN,xS,yS,wS,hS" << endl;
     }
 
