@@ -17,7 +17,7 @@ struct Color{
 }color;
 
 map<string, string> fileExt{
-    {"input", "mp4"},
+    {"input", "avi"},
     {"bg", "png"},
     {"tag", "txt"}
 };
@@ -40,12 +40,12 @@ bool isSimilar(Mat image1, Mat image2, double threshold = 1){
     Mat grayImage1, grayImage2;
     cvtColor(image1, grayImage1, CV_BGR2GRAY);
     cvtColor(image2, grayImage2, CV_BGR2GRAY);
-    assert(image1.size() == image2.size());
+    assert(grayImage1.size() == grayImage2.size());
     double dist = 0;
-    for(int x=0; x<image1.size().width; x++){
-        for(int y=0; y<image1.size().height; y++){
-            uchar p1 = image1.at<uchar>(y,x);
-            uchar p2 = image2.at<uchar>(y,x);
+    for(int x=0; x<grayImage1.size().width; x++){
+        for(int y=0; y<grayImage1.size().height; y++){
+            uchar p1 = grayImage1.at<uchar>(y,x);
+            uchar p2 = grayImage2.at<uchar>(y,x);
             dist += abs(double(p1)-double(p2));
         }   
     }
@@ -79,7 +79,6 @@ void process(string input, map<string,int> options){
         if(options["show"]){
             taggedFrame = frame.clone();
         }
-        resize(frame, frame, Size(WIDTH,HEIGHT));
         if(isSimilar(frame, bgImage, 10) || lastFrameGood && isSimilar(frame, lastFrame, 3)){
             stausColor = color.green;
             lastFrameGood = true;
@@ -99,7 +98,7 @@ void process(string input, map<string,int> options){
             showImage(input, taggedFrame, 1);
         }
         
-        lastFrame = frame;
+        lastFrame = frame.clone();
     }
     if(options["save"]){
         cout << "Tag saved" << endl;

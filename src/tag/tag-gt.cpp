@@ -18,7 +18,7 @@ struct Color{
 
 map<string, string> fileExt{
     {"input", "avi"},
-    {"tag", "txt"}
+    {"tag-gt", "txt"}
 };
 
 string getPath(string what, string input){
@@ -36,35 +36,39 @@ void showImage(string windowName, const Mat &image, int wait = 0){
 }
 
 void process(string input, map<string,int> options){
-        
+    
     VideoCapture inputVideo(getPath("input", input));
     assert(inputVideo.isOpened());
 
     Mat frame;
-    Scalar stausColor;
-    int tagFrameNumber, tag;
+    int taggt;
+    ofstream taggtfile;
+    taggtfile.open(getPath("tag-gt",input));
 
-    ifstream tagfile;
-    tagfile.open(getPath("tag",input));
+    queue<int> flips;
+    if(input == "1"){
+        flips.push(33);
+        flips.push(1187);
+    }
+    else if(input == "2"){
+
+    }
+    else if(input == "3"){
         
+    }
+    int tag = 0;
+
     for(int frameNumber=0;; frameNumber++){
         inputVideo >> frame;
-        if(frame.empty()) break;
-        if(frameNumber%1000 == 0){
-            cout << "Processing frame number : " << frameNumber+1 << endl;
+        if(frame.empty()){
+            break;
         }
-        tagfile >> tagFrameNumber >> tag;
-        assert(frameNumber==tagFrameNumber);
-        if(tag){
-            stausColor = color.green;
+        if(!flips.empty() && frameNumber == flips.front()){
+            tag = 1 - tag;
+            flips.pop();
         }
-        else{
-            stausColor = color.red;
-        }
-        circle(frame, Point(20,20), 20, stausColor, -1);
-        showImage(input, frame, options["fast"] ? 1 : 20);
+        taggtfile << frameNumber << " " << tag << endl;
     }
-    destroyWindow(input);
 
 }
 
@@ -84,8 +88,8 @@ int main(int argc, char** argv ){
         }
     }
 
-    map<string,int> options{ 
-        {"fast", false}
+    map<string,int> options{
+        
     };
 
     for(string option : optionArgs){

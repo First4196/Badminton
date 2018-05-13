@@ -17,7 +17,7 @@ struct Color{
 }color;
 
 map<string, string> fileExt{
-    {"input", "mp4"},
+    {"input", "avi"},
     {"bg", "png"},
     {"tag", "txt"},
     {"court", "txt"},
@@ -213,7 +213,6 @@ void process(string input, map<string,int> options){
         }
         tagfile >> tagFrameNumber >> tag;
         assert(frameNumber==tagFrameNumber);
-        resize(frame,frame,Size(WIDTH,HEIGHT));
         if(tag){
             Mat fgImage = Mat::zeros( Size(WIDTH,HEIGHT), CV_8U);
             Mat frameYCrCb, bgImageYCrCb;

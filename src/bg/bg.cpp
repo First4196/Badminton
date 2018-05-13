@@ -17,7 +17,7 @@ struct Color{
 }color;
 
 map<string, string> fileExt{
-    {"input", "mp4"},
+    {"input", "avi"},
     {"bg", "png"},
     {"tag", "txt"}
 };
@@ -40,16 +40,30 @@ bool isSimilar(Mat image1, Mat image2, double threshold = 1){
     Mat grayImage1, grayImage2;
     cvtColor(image1, grayImage1, CV_BGR2GRAY);
     cvtColor(image2, grayImage2, CV_BGR2GRAY);
-    assert(image1.size() == image2.size());
+    assert(grayImage1.size() == grayImage2.size());
     double dist = 0;
-    for(int x=0; x<image1.size().width; x++){
-        for(int y=0; y<image1.size().height; y++){
-            uchar p1 = image1.at<uchar>(y,x);
-            uchar p2 = image2.at<uchar>(y,x);
+    for(int x=0; x<grayImage1.size().width; x++){
+        for(int y=0; y<grayImage1.size().height; y++){
+            uchar p1 = grayImage1.at<uchar>(y,x);
+            uchar p2 = grayImage2.at<uchar>(y,x);
             dist += abs(double(p1)-double(p2));
         }   
     }
     return dist < WIDTH*HEIGHT*threshold;
+}
+
+double getGrad(Mat image){
+    Mat grayImage, gradImage;
+    cvtColor(image, grayImage, CV_BGR2GRAY);
+    Laplacian(grayImage, gradImage, CV_8U);
+    double grad = 0;
+    for(int x=0; x<gradImage.size().width; x++){
+        for(int y=0; y<gradImage.size().height; y++){
+            uchar p = gradImage.at<uchar>(y,x);
+            grad += double(p);
+        }   
+    }
+    return grad;
 }
 
 Mat getBgImage(string input, map<string,int> options){
@@ -64,34 +78,37 @@ Mat getBgImage(string input, map<string,int> options){
     int goodFrameCount = 0;
     vector<Mat> frames;
     vector<vector<vector<int>>> bucket(64,vector<vector<int>>(64,vector<int>(64,0)));
-    
-    for(int frameNumber=0; goodFrameCount<2500; frameNumber++){
+    double totalGrad = 0;
+
+    for(int frameNumber=0; goodFrameCount<5000; frameNumber++){
         inputVideo >> frame;
         if(frame.empty()) break;
         if(frameNumber%1000 == 0){
             cout << "Processing frame number : " << frameNumber+1 << endl;
         }
         showFrame = frame.clone();
-        resize(frame, frame, Size(WIDTH,HEIGHT));
+        
         if(frameNumber>0){
-            if(isSimilar(frame, lastFrame, 3)){
-                if(similarity<200){
+            double grad = getGrad(frame);
+            totalGrad += grad;
+            if(isSimilar(frame, lastFrame, 3) && grad>totalGrad/frameNumber){
+                if(similarity<50){
                     similarity += 1;
                 }
             }
             else{
                 similarity = 0;
             }
-            if(similarity>=200){
+            if(similarity>=50){
                 stausColor = color.green;
                 goodFrameCount++;
                 if(frames.size()<500){
-                    frames.push_back(frame);
+                    frames.push_back(frame.clone());
                 }
                 else{
                     int index = rand()%goodFrameCount;
                     if(index<500){
-                        frames[index] = frame;
+                        frames[index] = frame.clone();
                     }
                 }
             }
@@ -103,7 +120,7 @@ Mat getBgImage(string input, map<string,int> options){
         if(options["debug"]){
             showImage(input, showFrame, 1);
         }
-        lastFrame = frame;
+        lastFrame = frame.clone();
     }
     if(options["debug"]){
         destroyWindow(input);

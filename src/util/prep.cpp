@@ -17,8 +17,8 @@ struct Color{
 }color;
 
 map<string, string> fileExt{
-    {"input", "avi"},
-    {"tag", "txt"}
+    {"raw", "mp4"},
+    {"input", "avi"}
 };
 
 string getPath(string what, string input){
@@ -36,35 +36,38 @@ void showImage(string windowName, const Mat &image, int wait = 0){
 }
 
 void process(string input, map<string,int> options){
-        
-    VideoCapture inputVideo(getPath("input", input));
+   
+    VideoCapture inputVideo(getPath("raw", input));
     assert(inputVideo.isOpened());
 
-    Mat frame;
-    Scalar stausColor;
-    int tagFrameNumber, tag;
+    int inputVideoWidth = inputVideo.get(CAP_PROP_FRAME_WIDTH);
+    int inputVideoHeight = inputVideo.get(CAP_PROP_FRAME_HEIGHT);
+    int inputFPS = inputVideo.get(CAP_PROP_FPS);
+    auto ex = VideoWriter::fourcc('D', 'I', 'V', 'X');
 
-    ifstream tagfile;
-    tagfile.open(getPath("tag",input));
-        
-    for(int frameNumber=0;; frameNumber++){
-        inputVideo >> frame;
-        if(frame.empty()) break;
-        if(frameNumber%1000 == 0){
-            cout << "Processing frame number : " << frameNumber+1 << endl;
-        }
-        tagfile >> tagFrameNumber >> tag;
-        assert(frameNumber==tagFrameNumber);
-        if(tag){
-            stausColor = color.green;
-        }
-        else{
-            stausColor = color.red;
-        }
-        circle(frame, Point(20,20), 20, stausColor, -1);
-        showImage(input, frame, options["fast"] ? 1 : 20);
+    int fps = 10;
+    int ratio = round((double)inputFPS/(double)fps);
+    
+    VideoWriter outputVideo;
+    if(options["save"]){
+        outputVideo.open(getPath("input",input), ex, 1, Size(WIDTH, HEIGHT), true);
+        assert(outputVideo.isOpened());
     }
-    destroyWindow(input);
+
+    Mat outputFrame;
+    for(int frameNumber=0;; frameNumber++){
+        inputVideo >> outputFrame;
+        if(outputFrame.empty()){
+            break;
+        }
+        if(frameNumber%ratio!=0){
+            continue;    
+        }
+        if(options["save"]){
+            resize(outputFrame, outputFrame, Size(WIDTH, HEIGHT));
+            outputVideo << outputFrame;
+        }
+    }
 
 }
 
@@ -84,8 +87,8 @@ int main(int argc, char** argv ){
         }
     }
 
-    map<string,int> options{ 
-        {"fast", false}
+    map<string,int> options{
+        {"save", false}
     };
 
     for(string option : optionArgs){

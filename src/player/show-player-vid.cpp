@@ -17,7 +17,7 @@ struct Color{
 }color;
 
 map<string, string> fileExt{
-    {"input", "mp4"},
+    {"input", "avi"},
     {"player", "txt"}
 };
 

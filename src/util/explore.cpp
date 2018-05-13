@@ -17,8 +17,7 @@ struct Color{
 }color;
 
 map<string, string> fileExt{
-    {"input", "avi"},
-    {"tag", "txt"}
+    {"lq", "avi"}
 };
 
 string getPath(string what, string input){
@@ -35,37 +34,32 @@ void showImage(string windowName, const Mat &image, int wait = 0){
     waitKey(wait);
 }
 
+VideoCapture inputVideo;
+int frameNumber = 0;
+Mat frame;
+
+void on_trackbar(int, void*){
+    inputVideo.set(CV_CAP_PROP_POS_FRAMES, frameNumber);
+    inputVideo >> frame;
+    imshow("explore", frame);
+}
+
 void process(string input, map<string,int> options){
-        
-    VideoCapture inputVideo(getPath("input", input));
+    
+    inputVideo = VideoCapture(getPath("lq", input));
     assert(inputVideo.isOpened());
 
-    Mat frame;
-    Scalar stausColor;
-    int tagFrameNumber, tag;
+    namedWindow("explore", CV_WINDOW_AUTOSIZE);
 
-    ifstream tagfile;
-    tagfile.open(getPath("tag",input));
-        
-    for(int frameNumber=0;; frameNumber++){
-        inputVideo >> frame;
-        if(frame.empty()) break;
-        if(frameNumber%1000 == 0){
-            cout << "Processing frame number : " << frameNumber+1 << endl;
-        }
-        tagfile >> tagFrameNumber >> tag;
-        assert(frameNumber==tagFrameNumber);
-        if(tag){
-            stausColor = color.green;
-        }
-        else{
-            stausColor = color.red;
-        }
-        circle(frame, Point(20,20), 20, stausColor, -1);
-        showImage(input, frame, options["fast"] ? 1 : 20);
-    }
-    destroyWindow(input);
+    char TrackbarName[50];
+    sprintf( TrackbarName, "Frame (%d)", (int)inputVideo.get(CV_CAP_PROP_FRAME_COUNT));
 
+    createTrackbar( TrackbarName, "explore", &frameNumber, inputVideo.get(CV_CAP_PROP_FRAME_COUNT)-1, on_trackbar );
+
+    inputVideo >> frame;
+    imshow("explore", frame);
+
+    waitKey(0);
 }
 
 int main(int argc, char** argv ){
@@ -84,8 +78,8 @@ int main(int argc, char** argv ){
         }
     }
 
-    map<string,int> options{ 
-        {"fast", false}
+    map<string,int> options{
+        
     };
 
     for(string option : optionArgs){

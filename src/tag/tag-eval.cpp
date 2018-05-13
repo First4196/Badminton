@@ -17,8 +17,8 @@ struct Color{
 }color;
 
 map<string, string> fileExt{
-    {"input", "avi"},
-    {"tag", "txt"}
+    {"tag", "txt"},
+    {"tag-gt", "txt"}
 };
 
 string getPath(string what, string input){
@@ -36,35 +36,48 @@ void showImage(string windowName, const Mat &image, int wait = 0){
 }
 
 void process(string input, map<string,int> options){
-        
-    VideoCapture inputVideo(getPath("input", input));
-    assert(inputVideo.isOpened());
 
-    Mat frame;
-    Scalar stausColor;
-    int tagFrameNumber, tag;
-
+    int frameNumberTag, tag;
     ifstream tagfile;
     tagfile.open(getPath("tag",input));
+
+    int frameNumberTaggt, taggt;
+    ifstream taggtfile;
+    taggtfile.open(getPath("tag-gt",input));
         
-    for(int frameNumber=0;; frameNumber++){
-        inputVideo >> frame;
-        if(frame.empty()) break;
-        if(frameNumber%1000 == 0){
-            cout << "Processing frame number : " << frameNumber+1 << endl;
-        }
-        tagfile >> tagFrameNumber >> tag;
-        assert(frameNumber==tagFrameNumber);
-        if(tag){
-            stausColor = color.green;
+    int totalFrame = 0;
+    int truePositive = 0;
+    int falsePositive = 0;
+    int trueNegative = 0;
+    int falseNegative = 0;
+
+    for(int frameNumber=0; frameNumber<1434; frameNumber++){
+        tagfile >> frameNumberTag >> tag;
+        taggtfile >> frameNumberTaggt >> taggt;
+        totalFrame ++;
+        if(tag==1){
+            if(taggt==1){
+                truePositive++;
+            }
+            else{
+                falsePositive++;
+            }
         }
         else{
-            stausColor = color.red;
+            if(taggt==0){
+                trueNegative++;
+            }
+            else{
+                falseNegative++;
+            }
         }
-        circle(frame, Point(20,20), 20, stausColor, -1);
-        showImage(input, frame, options["fast"] ? 1 : 20);
     }
-    destroyWindow(input);
+
+    cout << totalFrame << endl;
+    cout << truePositive << endl;
+    cout << falsePositive << endl;
+    cout << trueNegative << endl;
+    cout << falseNegative << endl;
 
 }
 
@@ -84,8 +97,8 @@ int main(int argc, char** argv ){
         }
     }
 
-    map<string,int> options{ 
-        {"fast", false}
+    map<string,int> options{
+        
     };
 
     for(string option : optionArgs){
