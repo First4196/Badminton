@@ -22,7 +22,7 @@ map<string, string> fileExt{
 
 string getPath(string what, string input){
     assert(fileExt.find(what)!=fileExt.end());
-    return "data/" + what +"s/" + what + input + "." + fileExt[what];
+    return "data/" + what +"/" + what + input + "." + fileExt[what];
 }
 
 int WIDTH = 512;
@@ -60,8 +60,8 @@ int main(int argc, char** argv ){
         }
     }
 
-    map<string,int> options{ 
-        
+    map<string,int> options{
+
     };
 
     for(string option : optionArgs){

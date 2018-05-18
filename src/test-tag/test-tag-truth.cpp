@@ -17,13 +17,13 @@ struct Color{
 }color;
 
 map<string, string> fileExt{
-    {"tag", "txt"},
-    {"tag-gt", "txt"}
+    {"tag-truth-interval", "txt"},
+    {"tag-truth", "txt"}
 };
 
 string getPath(string what, string input){
     assert(fileExt.find(what)!=fileExt.end());
-    return "data/" + what +"s/" + what + input + "." + fileExt[what];
+    return "data/" + what +"/" + what + input + "." + fileExt[what];
 }
 
 int WIDTH = 512;
@@ -36,48 +36,24 @@ void showImage(string windowName, const Mat &image, int wait = 0){
 }
 
 void process(string input, map<string,int> options){
+    
+    ifstream tagtifile;
+    tagtifile.open(getPath("tag-truth-interval",input));
 
-    int frameNumberTag, tag;
-    ifstream tagfile;
-    tagfile.open(getPath("tag",input));
-
-    int frameNumberTaggt, taggt;
-    ifstream taggtfile;
-    taggtfile.open(getPath("tag-gt",input));
+    ofstream tagtfile;
+    tagtfile.open(getPath("tag-truth",input));
         
-    int totalFrame = 0;
-    int truePositive = 0;
-    int falsePositive = 0;
-    int trueNegative = 0;
-    int falseNegative = 0;
+    int numInterval;
+    int prevLast=0, last, value;
 
-    for(int frameNumber=0; frameNumber<1434; frameNumber++){
-        tagfile >> frameNumberTag >> tag;
-        taggtfile >> frameNumberTaggt >> taggt;
-        totalFrame ++;
-        if(tag==1){
-            if(taggt==1){
-                truePositive++;
-            }
-            else{
-                falsePositive++;
-            }
+    tagtifile >> numInterval;
+    for(int i=0; i<numInterval; i++){
+        tagtifile >> last >> value;
+        for(int j=prevLast; j<last; j++){
+            tagtfile << j << " " << value << endl;
         }
-        else{
-            if(taggt==0){
-                trueNegative++;
-            }
-            else{
-                falseNegative++;
-            }
-        }
+        prevLast = last;
     }
-
-    cout << totalFrame << endl;
-    cout << truePositive << endl;
-    cout << falsePositive << endl;
-    cout << trueNegative << endl;
-    cout << falseNegative << endl;
 
 }
 
@@ -98,7 +74,7 @@ int main(int argc, char** argv ){
     }
 
     map<string,int> options{
-        
+
     };
 
     for(string option : optionArgs){

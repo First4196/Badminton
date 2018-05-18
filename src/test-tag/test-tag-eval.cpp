@@ -18,12 +18,13 @@ struct Color{
 
 map<string, string> fileExt{
     {"input", "avi"},
-    {"tag-gt", "txt"}
+    {"tag", "txt"},
+    {"tag-truth", "txt"}
 };
 
 string getPath(string what, string input){
     assert(fileExt.find(what)!=fileExt.end());
-    return "data/" + what +"s/" + what + input + "." + fileExt[what];
+    return "data/" + what +"/" + what + input + "." + fileExt[what];
 }
 
 int WIDTH = 512;
@@ -39,36 +40,48 @@ void process(string input, map<string,int> options){
     
     VideoCapture inputVideo(getPath("input", input));
     assert(inputVideo.isOpened());
+    int numberOfFrames = inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
 
-    Mat frame;
-    int taggt;
-    ofstream taggtfile;
-    taggtfile.open(getPath("tag-gt",input));
+    ifstream tagfile;
+    tagfile.open(getPath("tag",input));
 
-    queue<int> flips;
-    if(input == "1"){
-        flips.push(33);
-        flips.push(1187);
-    }
-    else if(input == "2"){
-
-    }
-    else if(input == "3"){
+    ifstream tagtfile;
+    tagtfile.open(getPath("tag-truth",input));
         
-    }
-    int tag = 0;
+    int frameNumber, tag;
+    int frameNumbert, tagt;
+    int truePositive=0, falsePositive=0;
+    int trueNegative=0, falseNegative=0;
 
-    for(int frameNumber=0;; frameNumber++){
-        inputVideo >> frame;
-        if(frame.empty()){
-            break;
+    numberOfFrames = min(numberOfFrames, 2500);
+
+    for(int i=0; i<numberOfFrames; i++){
+        tagfile >> frameNumber >> tag;
+        tagtfile >> frameNumbert >> tagt;
+        assert(frameNumber==frameNumbert);
+        if(tag){
+            if(tagt){
+                truePositive++;
+            }
+            else{
+                falsePositive++;
+            }
         }
-        if(!flips.empty() && frameNumber == flips.front()){
-            tag = 1 - tag;
-            flips.pop();
+        else{
+            if(tagt){
+                falseNegative++;
+            }
+            else{
+                trueNegative++;
+            }
         }
-        taggtfile << frameNumber << " " << tag << endl;
     }
+
+    cout << "Number Of Frames : " << numberOfFrames << endl;
+    cout << "True  Positive   : " << truePositive << endl;
+    cout << "False Positive   : " << falsePositive << endl;
+    cout << "True  Negative   : " << trueNegative << endl;
+    cout << "False Negative   : " << falseNegative << endl;
 
 }
 
@@ -89,7 +102,7 @@ int main(int argc, char** argv ){
     }
 
     map<string,int> options{
-        
+
     };
 
     for(string option : optionArgs){

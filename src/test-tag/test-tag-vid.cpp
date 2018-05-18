@@ -18,7 +18,8 @@ struct Color{
 
 map<string, string> fileExt{
     {"input", "avi"},
-    {"tag", "txt"}
+    {"tag", "txt"},
+    {"test-tag-vid", "avi"}
 };
 
 string getPath(string what, string input){
@@ -35,18 +36,31 @@ void showImage(string windowName, const Mat &image, int wait = 0){
     waitKey(wait);
 }
 
+void putWhiteText(Mat& img, String text, Point p){
+    putText(img, text, p, FONT_HERSHEY_SCRIPT_COMPLEX, 1, color.white, 2);
+}
+
 void process(string input, map<string,int> options){
         
     VideoCapture inputVideo(getPath("input", input));
     assert(inputVideo.isOpened());
+    int numberOfFrames = inputVideo.get(CV_CAP_PROP_FRAME_COUNT);
 
     Mat frame;
     Scalar stausColor;
     int tagFrameNumber, tag;
+    int numberOfTaggedFrames = 0;
 
     ifstream tagfile;
     tagfile.open(getPath("tag",input));
         
+    VideoWriter outputVideo;
+    if(options["save"]){
+        auto ex = VideoWriter::fourcc('D', 'I', 'V', 'X');
+        outputVideo.open(getPath("test-tag-vid",input), ex, 1, Size(WIDTH, HEIGHT), true);
+        assert(outputVideo.isOpened());
+    }
+
     for(int frameNumber=0;; frameNumber++){
         inputVideo >> frame;
         if(frame.empty()) break;
@@ -56,15 +70,51 @@ void process(string input, map<string,int> options){
         tagfile >> tagFrameNumber >> tag;
         assert(frameNumber==tagFrameNumber);
         if(tag){
+            numberOfTaggedFrames ++;
             stausColor = color.green;
         }
         else{
             stausColor = color.red;
         }
         circle(frame, Point(20,20), 20, stausColor, -1);
-        showImage(input, frame, options["fast"] ? 1 : 20);
+        
+        string text = to_string(frameNumber+1) + '/' + to_string(numberOfFrames);
+        putWhiteText(frame, text, Point(2,HEIGHT-4));
+
+        if(options["show"]){
+            showImage(input, frame, options["fast"] ? 1 : 20);
+        }
+
+        if(options["save"]){
+            outputVideo << frame;
+        }
+
     }
-    destroyWindow(input);
+
+    frame = Mat::zeros( Size(WIDTH, HEIGHT), CV_8UC3);
+
+    string text1 = "Number of tagged frames : ";
+    string text2 = to_string(numberOfTaggedFrames);
+    string text3 = "Number of non-tagged frames : ";
+    string text4 = to_string(tagFrameNumber-numberOfTaggedFrames);
+
+    putWhiteText(frame, text1, Point(2,HEIGHT*1/6+10));
+    putWhiteText(frame, text2, Point(2,HEIGHT*2/6+10));
+    putWhiteText(frame, text3, Point(2,HEIGHT*4/6+10));
+    putWhiteText(frame, text4, Point(2,HEIGHT*5/6+10));
+
+    if(options["show"]){
+        for(int i=0; i<100; i++){
+            showImage(input, frame, options["fast"] ? 1 : 20);
+        }
+        destroyWindow(input);
+    }
+
+    if(options["save"]){
+        for(int i=0; i<100; i++){
+            outputVideo << frame;
+        }
+    }
 
 }
 
@@ -85,7 +135,9 @@ int main(int argc, char** argv ){
     }
 
     map<string,int> options{ 
-        {"fast", false}
+        {"show", false},
+        {"fast", false},
+        {"save", false}
     };
 
     for(string option : optionArgs){

@@ -23,7 +23,7 @@ map<string, string> fileExt{
 
 string getPath(string what, string input){
     assert(fileExt.find(what)!=fileExt.end());
-    return "data/" + what +"s/" + what + input + "." + fileExt[what];
+    return "data/" + what +"/" + what + input + "." + fileExt[what];
 }
 
 int WIDTH = 512;
@@ -85,7 +85,7 @@ tuple<vector<Vec4f>,Vec4f> getTransformedCourtLines(Point2f NW, Point2f NE, Poin
     Vec4f transformedMiddleCourtLine = transformedCourtlines.back();
     transformedCourtlines.pop_back();
 
-    return {transformedCourtlines, transformedMiddleCourtLine};
+    return tuple<vector<Vec4f>,Vec4f>(transformedCourtlines, transformedMiddleCourtLine);
 
 }
 
@@ -137,7 +137,7 @@ int main(int argc, char** argv ){
         }
     }
 
-    map<string,int> options{ 
+    map<string,int> options{
         
     };
 

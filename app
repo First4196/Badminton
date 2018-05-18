@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./bin/prep $@ -save
+./bin/input $@ -save
 ./bin/bg $@ -save
 ./bin/court $@ -save
 ./bin/tag $@ -save

@@ -19,9 +19,9 @@ struct Color{
 map<string, string> fileExt{
     {"input", "avi"},
     {"bg", "png"},
-    {"tag", "txt"},
+    {"tag-truth", "txt"},
     {"court", "txt"},
-    {"player", "txt"},
+    {"player-tag-truth", "txt"},
     {"csv", "csv"}
 };
 
@@ -190,13 +190,13 @@ void process(string input, map<string,int> options){
     ROI.height = courtROI.height+extend;
 
     ifstream tagfile;
-    tagfile.open(getPath("tag",input));
+    tagfile.open(getPath("tag-truth",input));
     Mat frame;
     int tagFrameNumber, tag;
 
     ofstream playerfile;
     if(options["save"]){
-        playerfile.open(getPath("player",input));
+        playerfile.open(getPath("player-tag-truth",input));
     }
     
     ofstream csvfile;
@@ -206,7 +206,7 @@ void process(string input, map<string,int> options){
     }
 
     int splitY = -1;
-    for(int frameNumber=0;; frameNumber++){
+    for(int frameNumber=0; frameNumber<2500; frameNumber++){
         inputVideo >> frame;
         if(frame.empty()){
             break;
