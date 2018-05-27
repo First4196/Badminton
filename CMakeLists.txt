@@ -35,6 +35,11 @@ target_link_libraries( show-player-vid ${OpenCV_LIBS} )
 
 
 
+add_executable( result src/result/result.cpp )
+target_link_libraries( result ${OpenCV_LIBS} )
+
+
+
 add_executable( show-tagged-vid src/tag/show-tagged-vid.cpp )
 target_link_libraries( show-tagged-vid ${OpenCV_LIBS} )
 

@@ -5,3 +5,4 @@
 ./bin/court $@ -save
 ./bin/tag $@ -save
 ./bin/player $@ -save -savecsv
+./bin/result $@ -save
