@@ -1,4 +1,4 @@
-# BadmintonEvolution
+# Badminton Court and Players Detection
 Badminton court and players detection using OpenCV
 
 # How To Use
